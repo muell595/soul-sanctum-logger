@@ -41,21 +41,6 @@ function pickChatData(message) {
   };
 }
 
-// Hook into chat message creation
-    Hooks.on('createChatMessage', (chatMessage, options, userId) => {
-        try {
-            const payload = pickChatData(chatMessage);
-            payload.foundryversion = game.data.version ?? game.version?.string ?? null;
-            payload.world = game.world?.id ?? game.world?.name ?? null;
-            payload.clientTimestamp = (new Date()).toISOString();
-            console.log("Soul Sanctum Logger - Chat Message Payload:", payload);
-        } catch (err) {
-            console.error("Soul Sanctum Logger - Error processing chat message:", err);
-        }
-        sendToEndpoint(payload);
-    });
-
-
 async function sendToEndpoint(payload) {
     const endpoint = "http://192.168.0.236:5678/webhook-test/roll20/chat"; // N8N URL
     const headers = { "Content-Type": "application/json" };
@@ -93,3 +78,17 @@ async function sendToEndpoint(payload) {
     return false;
   }
 }
+
+// Hook into chat message creation
+    Hooks.on('createChatMessage', (chatMessage, options, userId) => {
+        try {
+            const payload = pickChatData(chatMessage);
+            payload.foundryversion = game.data.version ?? game.version?.string ?? null;
+            payload.world = game.world?.id ?? game.world?.name ?? null;
+            payload.clientTimestamp = (new Date()).toISOString();
+            console.log("Soul Sanctum Logger - Chat Message Payload:", payload);
+        } catch (err) {
+            console.error("Soul Sanctum Logger - Error processing chat message:", err);
+        }
+        sendToEndpoint(payload);
+    });
