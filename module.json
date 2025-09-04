@@ -1,11 +1,32 @@
 {
     "id": "soul-sanctum-logger",
-        "title": "Soul Sanctum Logger",
-        "description": "A simple logging module for Foundry VTT.",
-        "version": "0.0.1",
-        "author": "Muell595",
-        "MinimumCoreVersion": "11",
-        "compatibleCoreVersion": "13",
+    "title": "Soul Sanctum Logger",
+    "description": "A simple logging module for Foundry VTT.",
+    "version": "0.0.11",
+    "authors": [
+        {
+        "name": "Jared Mueller",
+        "alias": "SASPinkPanther"
+        }
+    ],
+    "compatibility": {
+        "minimum": "11",
+        "verified": "13",
+        "maximum": "13"
+    },
+    "relationships": {
+        "systems": [
+            {
+                "id": "dnd5e",
+                "type": "system",
+                "compatibility": {
+                    "minimum": "5.0.4",
+                    "verified": "5.0.4",
+                    "maximum": "5.9.9"
+                }
+            }
+        ]
+    },
         "scripts": ["scripts/chat-forwarder.js"],
         "manifest": "https://github.com/muell595/soul-sanctum-logger/releases/download/0.0.0/module.json", 
         "download": "https://github.com/muell595/soul-sanctum-logger/archive/refs/tags/0.0.0.zip" 
