@@ -1,5 +1,5 @@
 const MODULE_ID = "soul-sanctum-logger";
-const SETTING_ENDPOINT = "endpointURL";
+const SETTING_ENDPOINT = "";
 const SETTING_APIKEY = "apiKey";
 
 Hooks.once('init', () => {
@@ -72,43 +72,63 @@ function pickChatData(message) {
     flags: m.flags || {}
   };
 }
-
 // Toggle this to true to log the exact payload that would be sent to the endpoint.
 // Leave commented out or set to false to disable noisy logging.
+
 // const ENABLE_DEBUG_LOG_PAYLOAD = false;
 const ENABLE_DEBUG_LOG_PAYLOAD = true;
 
-// Send POST wit hfetch. Keep errors non-blocking.
 async function sendToEndpoint(payload) {
-    const endpoint = game.settings.get(MODULE_ID, SETTING_ENDPOINT)?.trim();
-    if (!endpoint) return;
-    const apiKey = game.settings.get(MODULE_ID, SETTING_APIKEY)?.trim();
-    
+  const endpoint = game.settings.get(MODULE_ID, SETTING_ENDPOINT)?.trim();
+  if (!endpoint) return false;
+  const apiKey = game.settings.get(MODULE_ID, SETTING_APIKEY)?.trim();
 
-     // If enabled, print the exact payload and headers that will be used.
-    if (ENABLE_DEBUG_LOG_PAYLOAD) {
-        const headers = { "Content-Type": "application/json" };
-        if (apiKey) headers["x-api-key"] = apiKey;
-        console.log(`${MODULE_ID} | DEBUG — would POST to:`, endpoint);
-        console.log(`${MODULE_ID} | DEBUG — headers:`, headers);
-        console.log(`${MODULE_ID} | DEBUG — body:`, JSON.stringify(payload));
+  // If enabled, print the exact payload and headers that will be used.
+  if (ENABLE_DEBUG_LOG_PAYLOAD) {
+    const headers = { "Content-Type": "application/json" };
+    if (apiKey) headers["x-api-key"] = apiKey;
+    console.log(`${MODULE_ID} | DEBUG — would POST to:`, endpoint);
+    console.log(`${MODULE_ID} | DEBUG — headers:`, headers);
+    console.log(`${MODULE_ID} | DEBUG — body:`, JSON.stringify(payload));
   }
 
-        
-        try {
-            const headers = { "Content-Type": "application/json" };
-            if (apiKey) headers["x-api-key"] = apiKey;
+  const headers = { "Content-Type": "application/json" };
+  if (apiKey) headers["x-api-key"] = apiKey;
 
-            await fetch(endpoint, {
-                method: "POST",
-                headers,
-                body: JSON.stringify(payload),
-                keepalive: true
-            });
-        } catch (err) {
-            console.warn(`${MODULE_ID} | Failed to forward chat message:`, err);
-        }
-    }
+  try {
+    const resp = await fetch(endpoint, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(payload),
+      keepalive: true
+    });
+
+    const success = resp.ok;
+    let responseText = null;
+    try { responseText = await resp.text(); } catch {}
+
+    Hooks.callAll(`${MODULE_ID}.chatSent`, {
+      success,
+      status: resp.status,
+      response: responseText,
+      originalPayload: payload,
+      error: null
+    });
+
+    return success;
+  } catch (err) {
+    Hooks.callAll(`${MODULE_ID}.chatSent`, {
+      success: false,
+      status: null,
+      response: null,
+      originalPayload: payload,
+      error: err
+    });
+    console.warn(`${MODULE_ID} | Failed to forward chat message:`, err);
+    return false;
+  }
+}
+
 
     // Hook into chat message creation
     Hooks.on('createChatMessage', (chatMessage, options, userId) => {
