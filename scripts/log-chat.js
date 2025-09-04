@@ -35,7 +35,9 @@ function pickChatData(message) {
     whisper: m.whisper || null,
     blind: m.blind || false,
     timestamp: m.flags?.core?.time ? m.flags.core.time : (new Date()).toISOString(),
-    flags: m.flags || {}
+    flags: m.flags || {},
+    emote: m.emote || false,
+    sound: m.sound || null
   };
 }
 
@@ -52,3 +54,41 @@ function pickChatData(message) {
         }
     });
 
+
+async function sendToEndpoint(payload) {
+    const endpoint = "http://192.168.0.236:5678/webhook-test/roll20/chat"; // N8N URL
+    const headers = { "Content-Type": "application/json" };
+
+    try {
+    const resp = await fetch(endpoint, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(payload),
+      keepalive: true
+    });
+
+    const success = resp.ok;
+    let responseText = null;
+    try { responseText = await resp.text(); } catch {}
+
+    Hooks.callAll(`${MODULE_ID}.chatSent`, {
+      success,
+      status: resp.status,
+      response: responseText,
+      originalPayload: payload,
+      error: null
+    });
+
+    return success;
+  } catch (err) {
+    Hooks.callAll(`${MODULE_ID}.chatSent`, {
+      success: false,
+      status: null,
+      response: null,
+      originalPayload: payload,
+      error: err
+    });
+    console.warn(`${MODULE_ID} | Failed to forward chat message:`, err);
+    return false;
+  }
+}
