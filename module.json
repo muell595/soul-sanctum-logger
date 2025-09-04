@@ -1,0 +1,12 @@
+{
+    "name": "soul-sanctum-logger",
+        "title": "Soul Sanctum Logger",
+        "description": "A simple logging module for Foundry VTT.",
+        "version": "0.0.1",
+        "author": "Muell595",
+        "MinimumCoreVersion": "11",
+        "compatibleCoreVersion": "13",
+        "scripts": ["scripts/chat-forwarder.js"],
+        "manifest": "", 
+        "download": "" 
+}
