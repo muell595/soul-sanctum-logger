@@ -1,5 +1,5 @@
 const MODULE_ID = "soul-sanctum-logger";
-const SETTING_ENDPOINT = "";
+const SETTING_ENDPOINT = "yourEndpointURL";
 const SETTING_APIKEY = "apiKey";
 
 Hooks.once('init', () => {
