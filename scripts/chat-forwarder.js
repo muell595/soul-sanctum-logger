@@ -26,10 +26,10 @@ Hooks.once('init', () => {
 // Utility: sanitize or pick fields relevant to store/forward
 function pickChatData(message) {
     // Normalize migrated fields
-    if (m.author && !m.user) m.user = m.author.id ?? m.author;
-    if (!m.author && m.user) m.author = { id: m.user, name: null };
     // message may be a ChatMessage document or a plain object depending on hook timing/version.
     const m = (message && typeof message.toObject === "function") ? message.toObject(false) : message;
+    if (m.author && !m.user) m.user = m.author.id ?? m.author;
+    if (!m.author && m.user) m.author = { id: m.user, name: null };
     // Relevant Fields
     return {
         messageId: m._id || m.id || null,
