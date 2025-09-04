@@ -26,7 +26,7 @@ Hooks.once('init', () => {
 // Utility: sanitize or pick fields relevant to store/forward
 function pickChatData(message) {
     // message may be a ChatMessage document or a plain object depending on hook timing/version.
-    const m = message instanceof foundry.documents.BaseDocument ? message.toObject(false) : message;
+    const m = (message && typeof message.toObject === "function") ? message.toObject(false) : message;
     // Relevant Fields
     return {
         messageId: m._id || m.id || null,
