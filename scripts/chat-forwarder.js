@@ -72,12 +72,28 @@ function pickChatData(message) {
     flags: m.flags || {}
   };
 }
- 
+
+// Toggle this to true to log the exact payload that would be sent to the endpoint.
+// Leave commented out or set to false to disable noisy logging.
+// const ENABLE_DEBUG_LOG_PAYLOAD = false;
+const ENABLE_DEBUG_LOG_PAYLOAD = true;
+
 // Send POST wit hfetch. Keep errors non-blocking.
 async function sendToEndpoint(payload) {
     const endpoint = game.settings.get(MODULE_ID, SETTING_ENDPOINT)?.trim();
     if (!endpoint) return;
-        const apiKey = game.settings.get(MODULE_ID, SETTING_APIKEY)?.trim();
+    const apiKey = game.settings.get(MODULE_ID, SETTING_APIKEY)?.trim();
+    
+
+     // If enabled, print the exact payload and headers that will be used.
+    if (ENABLE_DEBUG_LOG_PAYLOAD) {
+        const headers = { "Content-Type": "application/json" };
+        if (apiKey) headers["x-api-key"] = apiKey;
+        console.log(`${MODULE_ID} | DEBUG — would POST to:`, endpoint);
+        console.log(`${MODULE_ID} | DEBUG — headers:`, headers);
+        console.log(`${MODULE_ID} | DEBUG — body:`, JSON.stringify(payload));
+  }
+
         
         try {
             const headers = { "Content-Type": "application/json" };
