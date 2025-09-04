@@ -15,7 +15,7 @@ Hooks.once('init', () => {
 // Optional API key heaer stored as world setting (visible to GMs)
     game.settings.register(MODULE_ID, SETTING_APIKEY, {
         name: "Chat Forwarder API Key",
-        hint: "Optional API key to include in the request headers. Server muist validate. Keep blank to disable.",
+        hint: "Optional API key to include in the request headers. Server must validate. Keep blank to disable.",
         scope: "world",
         config: true,
         default: "",
@@ -36,10 +36,10 @@ function pickChatData(message) {
       m.user = (typeof m.author === "object") ? (m.author.id ?? m.author) : m.author;
     }
 
-    // If `user` exists but `author` does not, create a minimal `author` object
-    if (!m.author && m.user) {
-      m.author = { id: m.user, name: null };
-    }
+    // // If `user` exists but `author` does not, create a minimal `author` object
+    // if (!m.author && m.user) {
+    //   m.author = { id: m.user, name: null };
+    // }
 
     // If `author` is an object with a name, expose it for convenience
     if (m.author && typeof m.author === "object" && m.author.name) {
@@ -50,12 +50,13 @@ function pickChatData(message) {
   // Relevant Fields
   return {
     messageId: m._id || m.id || null,
-    userID: m.author?.id ?? m.author ?? m.user ?? m.userId ?? null,
+      // userID: m.author?.id ?? m.author ?? m.user ?? m.userId ?? null,
+    userID: m.author?.id ?? m.author ?? null,
     username: (() => {
       try {
         // Prefer an embedded author name if present, else lookup by ID
         if (m._authorName) return m._authorName;
-        const authorId = m.author?.id ?? m.author ?? m.user ?? m.userId ?? null;
+        const authorId = m.author?.id ?? m.author ?? null;
         const u = authorId ? game.users.get(authorId) : null;
         return u ? u.name : null;
       } catch (e) {
