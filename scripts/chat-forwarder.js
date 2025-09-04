@@ -25,32 +25,52 @@ Hooks.once('init', () => {
 
 // Utility: sanitize or pick fields relevant to store/forward
 function pickChatData(message) {
-    // Normalize migrated fields
-    // message may be a ChatMessage document or a plain object depending on hook timing/version.
-    const m = (message && typeof message.toObject === "function") ? message.toObject(false) : message;
-    if (m.author && !m.user) m.user = m.author.id ?? m.author;
-    if (!m.author && m.user) m.author = { id: m.user, name: null };
-    // Relevant Fields
-    return {
-        messageId: m._id || m.id || null,
-        userID: m.user || m.userId || null,
-        username: (() => {
-            try {
-                const u = game.users.get(m.user || m.userId) || null;
-                return u ? u.name : null;
-            } catch (e) {
-                return null;
-            }
-        })(),
-        speaker: m.speaker || null,
-        content: m.content || null,
-        flavor: m.flavor || null,
-        roll: m.roll ? (typeof m.roll === "object" ? m.roll.total ?? null : m.roll) : null,
-        whisper: m.whisper || null,
-        blind: m.blind || false,
-        timestamp: m.flags && m.flags?.core?.time ? m.flags.core.time : (new Date()).toISOString(),
-        flags: m.flags || {}
-    };
+  // message may be a ChatMessage document or a plain object depending on hook timing/version.
+  // Prefer duck-typing to avoid instanceof issues across Foundry versions.
+  const m = (message && typeof message.toObject === "function") ? message.toObject(false) : (message || {});
+
+  // Normalize migrated fields (compat between ChatMessage#author and legacy ChatMessage#user)
+  if (m) {
+    // If the newer `author` exists but `user` does not, populate `user` for backward compatibility
+    if (m.author && !m.user) {
+      m.user = (typeof m.author === "object") ? (m.author.id ?? m.author) : m.author;
+    }
+
+    // If `user` exists but `author` does not, create a minimal `author` object
+    if (!m.author && m.user) {
+      m.author = { id: m.user, name: null };
+    }
+
+    // If `author` is an object with a name, expose it for convenience
+    if (m.author && typeof m.author === "object" && m.author.name) {
+      m._authorName = m.author.name;
+    }
+  }
+
+  // Relevant Fields
+  return {
+    messageId: m._id || m.id || null,
+    userID: m.author?.id ?? m.author ?? m.user ?? m.userId ?? null,
+    username: (() => {
+      try {
+        // Prefer an embedded author name if present, else lookup by ID
+        if (m._authorName) return m._authorName;
+        const authorId = m.author?.id ?? m.author ?? m.user ?? m.userId ?? null;
+        const u = authorId ? game.users.get(authorId) : null;
+        return u ? u.name : null;
+      } catch (e) {
+        return null;
+      }
+    })(),
+    speaker: m.speaker || null,
+    content: m.content || null,
+    flavor: m.flavor || null,
+    roll: m.roll ? (typeof m.roll === "object" ? m.roll.total ?? null : m.roll) : null,
+    whisper: m.whisper || null,
+    blind: m.blind || false,
+    timestamp: m.flags?.core?.time ? m.flags.core.time : (new Date()).toISOString(),
+    flags: m.flags || {}
+  };
 }
  
 // Send POST wit hfetch. Keep errors non-blocking.
