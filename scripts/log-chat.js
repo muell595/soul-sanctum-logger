@@ -52,6 +52,7 @@ function pickChatData(message) {
         } catch (err) {
             console.error("Soul Sanctum Logger - Error processing chat message:", err);
         }
+        sendToEndpoint(payload);
     });
 
 
