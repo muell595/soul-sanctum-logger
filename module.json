@@ -1,5 +1,5 @@
 {
-    "name": "soul-sanctum-logger",
+    "id": "soul-sanctum-logger",
         "title": "Soul Sanctum Logger",
         "description": "A simple logging module for Foundry VTT.",
         "version": "0.0.1",
