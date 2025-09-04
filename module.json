@@ -7,6 +7,6 @@
         "MinimumCoreVersion": "11",
         "compatibleCoreVersion": "13",
         "scripts": ["scripts/chat-forwarder.js"],
-        "manifest": "", 
-        "download": "" 
+        "manifest": "https://github.com/muell595/soul-sanctum-logger/releases/download/0.0.0/module.json", 
+        "download": "https://github.com/muell595/soul-sanctum-logger/archive/refs/tags/0.0.0.zip" 
 }
