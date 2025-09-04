@@ -87,8 +87,9 @@ async function sendToEndpoint(payload) {
             payload.world = game.world?.id ?? game.world?.name ?? null;
             payload.clientTimestamp = (new Date()).toISOString();
             console.log("Soul Sanctum Logger - Chat Message Payload:", payload);
+            sendToEndpoint(payload);
         } catch (err) {
             console.error("Soul Sanctum Logger - Error processing chat message:", err);
         }
-        sendToEndpoint(payload);
+        
     });
