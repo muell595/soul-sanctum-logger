@@ -28,6 +28,6 @@
         ]
     },
         "scripts": ["scripts/chat-forwarder.js"],
-        "manifest": "https://github.com/muell595/soul-sanctum-logger/releases/download/0.0.0/module.json", 
-        "download": "https://github.com/muell595/soul-sanctum-logger/archive/refs/tags/0.0.0.zip" 
+        "manifest": "https://github.com/muell595/soul-sanctum-logger/releases/download/0.0.1/module.json", 
+        "download": "https://github.com/muell595/soul-sanctum-logger/archive/refs/tags/0.0.1.zip" 
 }
