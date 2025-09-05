@@ -42,7 +42,7 @@ function pickChatData(message) {
 }
 
 async function sendToEndpoint(payload) {
-    const endpoint = "http://192.168.0.236:5678/webhook-test/roll20/chat"; // N8N URL
+    const endpoint = "https://n8n.muellervault.net/webhook-test/roll20/chat"; // N8N URL --> This needs to be HTTPS. It won't work over HTTP. I think I need to set up my domain now.
     const headers = { "Content-Type": "application/json" };
 
     try {
