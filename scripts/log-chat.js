@@ -40,9 +40,12 @@ function pickChatData(message) {
     sound: m.sound || null
   };
 }
-
+// Originally got this message:
+// "This has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource."
+// Fixed it in N8N by enabling CORS in the webhook settings.
 async function sendToEndpoint(payload) {
-    const endpoint = "https://n8n.muellervault.net/webhook-test/roll20/chat"; // N8N URL --> This needs to be HTTPS. It won't work over HTTP. I think I need to set up my domain now.
+    const endpoint = "https://n8n.muellervault.net/webhook/roll20/chat"; // N8N Production URL --> This needs to be HTTPS.
+    // const endpoint = "https://n8n.muellervault.net/webhook-test/roll20/chat"; // Test URL
     const headers = { "Content-Type": "application/json" };
 
     try {
