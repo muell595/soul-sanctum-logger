@@ -89,6 +89,7 @@ async function sendToEndpoint(payload) {
             payload.foundryversion = game.data.version ?? game.version?.string ?? null;
             payload.world = game.world?.id ?? game.world?.name ?? null;
             payload.clientTimestamp = (new Date()).toISOString();
+            payload.module_id = MODULE_ID;
             console.log("Soul Sanctum Logger - Chat Message Payload:", payload);
             sendToEndpoint(payload);
         } catch (err) {
