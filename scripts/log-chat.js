@@ -132,6 +132,46 @@ function pickChatData(message) {
   };
 }
 
+// Send the roll data to the endpoint
+async function sendToEndpoint(payload) {
+    // const endpoint = "https://n8n.muellervault.net/webhook/roll20/chat"; // PROD. Goes to public schema in postgres. is PROD instance of N8N's webhook.
+    const endpoint = "https://n8n.muellervault.net/webhook/roll20/test/chat"; // TEST. Goes to test schema in postgres. Is the PROD instance of N8N's webhook.
+    // const endpoint = "https://n8n.muellervault.net/webhook-test/roll20/test/chat"; // TEST DEBUG. Goes to test schema in postgres. Is the TEST instance of N8N's webhook.
+    const headers = { "Content-Type": "application/json" };
+
+    try {
+    const resp = await fetch(endpoint, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(payload),
+      keepalive: true
+    });
+
+    const success = resp.ok;
+    let responseText = null;
+    try { responseText = await resp.text(); } catch {}
+
+    Hooks.callAll(`${MODULE_ID}.chatSent`, {
+      success,
+      status: resp.status,
+      response: responseText,
+      originalPayload: payload,
+      error: null
+    });
+
+    return success;
+  } catch (err) {
+    Hooks.callAll(`${MODULE_ID}.chatSent`, {
+      success: false,
+      status: null,
+      response: null,
+      originalPayload: payload,
+      error: err
+    });
+    console.warn(`${MODULE_ID} | Failed to forward chat message:`, err);
+    return false;
+  }
+}
 
 // Hook into ChatMessage creation
 Hooks.on('createChatMessage', (message, options, userId) => {
