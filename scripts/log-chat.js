@@ -97,3 +97,19 @@ async function sendToEndpoint(payload) {
         }
         
     });
+
+// Hook into ChatMessage5e. Maybe this sends different info...?
+    Hooks.on('createChatMessage', (ChatMessage5e, options, userId) => {
+        try {
+            const payload = pickChatData(ChatMessage5e);
+            payload.foundryversion = game.data.version ?? game.version?.string ?? null;
+            payload.world = game.world?.id ?? game.world?.name ?? null;
+            payload.clientTimestamp = (new Date()).toISOString();
+            payload.module_id = MODULE_ID;
+            console.log("Soul Sanctum Logger - Chat Message Payload:", payload);
+            sendToEndpoint(payload);
+        } catch (err) {
+            console.error("Soul Sanctum Logger - Error processing chat message:", err);
+        }
+        
+    });  
