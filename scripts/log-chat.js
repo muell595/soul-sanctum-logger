@@ -44,8 +44,9 @@ function pickChatData(message) {
 // "This has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource."
 // Fixed it in N8N by enabling CORS in the webhook settings.
 async function sendToEndpoint(payload) {
-    // const endpoint = "https://n8n.muellervault.net/webhook/roll20/chat"; // PROD. Goes to public schema in postgres. is production instance of N8N's webhook.
-    const endpoint = "https://n8n.muellervault.net/webhook/roll20/test/chat"; // TEST. Goes to test schema in postgres. Is the prod instance of N8N's webhook.
+    // const endpoint = "https://n8n.muellervault.net/webhook/roll20/chat"; // PROD. Goes to public schema in postgres. is PROD instance of N8N's webhook.
+    // const endpoint = "https://n8n.muellervault.net/webhook/roll20/test/chat"; // TEST. Goes to test schema in postgres. Is the PROD instance of N8N's webhook.
+    const endpoint = "https://n8n.muellervault.net/webhook-test/roll20/test/chat"; // TEST DEBUG. Goes to test schema in postgres. Is the TEST instance of N8N's webhook.
     const headers = { "Content-Type": "application/json" };
 
     try {
@@ -82,21 +83,23 @@ async function sendToEndpoint(payload) {
   }
 }
 
+// GOING WITH 5e ChatMessage for now. Need to test if it sends different info.
+
 // Hook into chat message creation
-    Hooks.on('createChatMessage', (chatMessage, options, userId) => {
-        try {
-            const payload = pickChatData(chatMessage);
-            payload.foundryversion = game.data.version ?? game.version?.string ?? null;
-            payload.world = game.world?.id ?? game.world?.name ?? null;
-            payload.clientTimestamp = (new Date()).toISOString();
-            payload.module_id = MODULE_ID;
-            console.log("Soul Sanctum Logger - Chat Message Payload:", payload);
-            sendToEndpoint(payload);
-        } catch (err) {
-            console.error("Soul Sanctum Logger - Error processing chat message:", err);
-        }
+    // Hooks.on('createChatMessage', (chatMessage, options, userId) => {
+    //     try {
+    //         const payload = pickChatData(chatMessage);
+    //         payload.foundryversion = game.data.version ?? game.version?.string ?? null;
+    //         payload.world = game.world?.id ?? game.world?.name ?? null;
+    //         payload.clientTimestamp = (new Date()).toISOString();
+    //         payload.module_id = MODULE_ID;
+    //         console.log("Soul Sanctum Logger - Chat Message Payload:", payload);
+    //         sendToEndpoint(payload);
+    //     } catch (err) {
+    //         console.error("Soul Sanctum Logger - Error processing chat message:", err);
+    //     }
         
-    });
+    // });
 
 // Hook into ChatMessage5e. Maybe this sends different info...?
     Hooks.on('createChatMessage', (ChatMessage5e, options, userId) => {
