@@ -182,7 +182,7 @@ Hooks.on('createChatMessage', (message, options, userId) => {
     payload.clientTimestamp = (new Date()).toISOString();
     payload.module_id = MODULE_ID;
     console.log("Soul Sanctum Logger - Chat Message Payload:", payload);
-    // sendToEndpoint(payload); // enable as needed
+    sendToEndpoint(payload); // enable as needed
   } catch (err) {
     console.error("Soul Sanctum Logger - Error processing chat message:", err);
   }
