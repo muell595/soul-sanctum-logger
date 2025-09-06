@@ -8,7 +8,7 @@ function pickChatData(message) {
 
   // Normalize author/user fields when possible
   if (m) {
-    m.user = (typeof m.author === "object") ? (m.author.id ?? m.author) : m.author;
+    //m.user = (typeof m.author === "object") ? (m.author.id ?? m.author) : m.author;
     if (m.author && typeof m.author === "object" && m.author.name) {
       m._authorName = m.author.name;
     }
@@ -105,7 +105,6 @@ function pickChatData(message) {
         return null;
       }
     })(),
-    user: m.user ?? null,
     speaker: m.speaker ?? null,
     content: m.content ?? null,
     flavor: m.flavor ?? null,
