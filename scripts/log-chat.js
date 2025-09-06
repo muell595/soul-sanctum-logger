@@ -102,17 +102,32 @@ async function sendToEndpoint(payload) {
     // });
 
 // Hook into ChatMessage5e. Maybe this sends different info...?
-    Hooks.on('createChatMessage', (ChatMessage5e, options, userId) => {
-        try {
-            const payload = pickChatData(ChatMessage5e);
-            payload.foundryversion = game.data.version ?? game.version?.string ?? null;
-            payload.world = game.world?.id ?? game.world?.name ?? null;
-            payload.clientTimestamp = (new Date()).toISOString();
-            payload.module_id = MODULE_ID;
-            console.log("Soul Sanctum Logger - Chat Message Payload:", payload);
-            sendToEndpoint(payload);
-        } catch (err) {
-            console.error("Soul Sanctum Logger - Error processing chat message:", err);
-        }
+    // Hooks.on('createChatMessage', (ChatMessage5e, options, userId) => {
+    //     try {
+    //         const payload = pickChatData(ChatMessage5e);
+    //         payload.foundryversion = game.data.version ?? game.version?.string ?? null;
+    //         payload.world = game.world?.id ?? game.world?.name ?? null;
+    //         payload.clientTimestamp = (new Date()).toISOString();
+    //         payload.module_id = MODULE_ID;
+    //         console.log("Soul Sanctum Logger - Chat Message Payload:", payload);
+    //         sendToEndpoint(payload);
+    //     } catch (err) {
+    //         console.error("Soul Sanctum Logger - Error processing chat message:", err);
+    //     }
         
-    });  
+    // });  
+
+    Hooks.on('createChatMessage', (message, options, userId) => {
+  try {
+    const m = (message && typeof message.toObject === "function") ? message.toObject(false) : message;
+    console.groupCollapsed("Chat message inspection");
+    console.dir(m, { depth: null });
+    console.log("m.rolls:", m.rolls);
+    if (Array.isArray(m.rolls) && m.rolls[0]) {
+      console.dir(m.rolls[0], { depth: null });
+      // show common total fields
+      console.log("possible totals:", m.rolls[0].total, m.rolls[0]._total, m.rolls[0].result?.total);
+    }
+    console.groupEnd();
+  } catch (e) { console.error(e); }
+});
