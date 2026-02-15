@@ -135,8 +135,8 @@ function pickChatData(message) {
 // Send the roll data to the endpoint
 async function sendToEndpoint(payload) {
     // const endpoint = "https://n8n.muellervault.net/webhook/roll20/chat"; // PROD. Goes to public schema in postgres. is PROD instance of N8N's webhook.
-    // const endpoint = "https://n8n.muellervault.net/webhook/roll20/test/chat"; // TEST. Goes to test schema in postgres. Is the PROD instance of N8N's webhook.
-    const endpoint = "https://n8n.muellervault.net/webhook-test/roll20/test/chat"; // TEST DEBUG. Goes to test schema in postgres. Is the TEST instance of N8N's webhook.
+    const endpoint = "https://n8n.muellervault.net/webhook/roll20/test/chat"; // TEST. Goes to test schema in postgres. Is the PROD instance of N8N's webhook.
+    // const endpoint = "https://n8n.muellervault.net/webhook-test/roll20/test/chat"; // TEST DEBUG. Goes to test schema in postgres. Is the TEST instance of N8N's webhook.
     const headers = { "Content-Type": "application/json" };
 
     try {
