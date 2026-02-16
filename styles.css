@@ -1,0 +1,15 @@
+.npc-chat .npc-history {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 0.5rem;
+}
+.npc-chat .npc-footer {
+  display: flex;
+  gap: 0.5rem;
+}
+.npc-chat #npc-input {
+  flex: 1;
+}
+.npc-chat .message {
+  margin: 0.25rem 0;
+}
