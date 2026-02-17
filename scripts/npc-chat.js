@@ -13,8 +13,9 @@ const NPC_ID   = "Actor.UWdXecZvjKWQHLrh";      // Optional: reliable actor ID
 /* ------------------------------------------------------------------
  *  IMPORT V2 core classes / utilities
  * ------------------------------------------------------------------ */
-import { ApplicationV2 } from "foundry/applications/api.js";
-import { mergeObject }   from "foundry/utils.js";
+
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api
+const { mergeObject } = foundry.utils;
 
 /* ------------------------------------------------------------------
  *  UI CLASS – the actual chat window (extends V2 Application)

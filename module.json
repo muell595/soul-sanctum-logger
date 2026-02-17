@@ -31,7 +31,6 @@
             "scripts/log-chat.js",
             "scripts/npc-chat.js"
         ],
-        "scripts": [],
         "styles": [
             "styles/styles.css"
         ],
