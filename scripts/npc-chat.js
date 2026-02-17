@@ -33,6 +33,7 @@ class NpcChatUI extends HandlebarsApplicationMixin(ApplicationV2) {
     const stored = game.settings.get("npc-chat-ui", "history") || {};
     const history = stored[npc?.id] || [];
 
+    // Cache for later use (no this.data in V2)
     this.npcName = npc?.name ?? NPC_NAME;
     this.npcId   = npc?.id ?? null;
 
@@ -79,13 +80,13 @@ class NpcChatUI extends HandlebarsApplicationMixin(ApplicationV2) {
       flags:   { "npc-chat-ui": { npcId } }
     };
 
-    // Normal chat message (visible to everyone)
+    // 1️⃣ Normal chat message (visible to everyone)
     await ChatMessage.create(payload, { displaySheet: false });
 
-    // Store locally for this UI
+    // 2️⃣ Store locally for this UI
     this._storeLocalMessage({ speaker: speakerName, content: raw, ts: Date.now() });
 
-    // Broadcast to other open UI windows
+    // 3️⃣ Broadcast to other open UI windows
     game.socket.emit("module.npc-chat-ui", {
       type: "newMessage",
       speaker: speakerName,
