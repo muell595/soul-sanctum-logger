@@ -1,7 +1,7 @@
 /*  --------------------------------------------------------------
  *  Minimal V2 dialog – no mergeObject, no extra dependencies
  *  -------------------------------------------------------------- */
-import { ApplicationV2, HandlebarsApplicationMixin } from "foundry/applications/api.js";
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 class SimpleDialog extends HandlebarsApplicationMixin(ApplicationV2) {
   /** @override – static options for the window */
