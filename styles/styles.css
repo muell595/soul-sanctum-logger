@@ -1,15 +1,24 @@
-.npc-chat .npc-history {
-  max-height: 300px;
+.npc-chat .window-content {
+  background: #fafafa;
+  color: #222;
+}
+
+/* History area */
+.npc-chat #npc-history {
+  max-height: 260px;
   overflow-y: auto;
-  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(255,255,255,0.9);
+  border: 1px solid #bbb;
+  border-radius: 4px;
 }
-.npc-chat .npc-footer {
-  display: flex;
-  gap: 0.5rem;
-}
-.npc-chat #npc-input {
-  flex: 1;
-}
-.npc-chat .message {
-  margin: 0.25rem 0;
+
+/* Title */
+.npc-chat .npc-title { margin:0 0 0.5rem 0; font-size:1.2em; text-align:center; }
+
+/* Input row – flex layout */
+.npc-chat .npc-input-row {
+  display:flex;
+  gap:0.5rem;
+  margin-top:0.5rem;
 }
