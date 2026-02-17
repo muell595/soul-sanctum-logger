@@ -1,60 +1,45 @@
 /********************************************************************
  *  npc-chat.js – Foundry VTT module that adds a persistent NPC‑chat UI
  *
- *  What it does
- *  ────────────────
- *  • Defines NpcChatUI – a pop‑out window with its own message log.
- *  • Adds a permanent button to the left UI bar (always visible).
- *  • Sends messages both to the global Foundry chat log and to any
- *    open NpcChatUI windows via a module‑scoped socket.
- *  • Optionally injects a tiny “💬 Talk” link next to NPC messages
- *    in the regular chat log.
- *
- *  How to use
- *  ───────────
- *  1. Enable the module in Foundry → Manage Modules.
- *  2. Click the speech‑bubble button (top‑left) or run a macro:
- *        new NpcChatUI().render(true);
- *  3. Type messages; they appear in the pop‑out and in the normal
- *     chat log, and all players see them instantly.
- *
- *  Customisation
- *  ───────────────
- *  • Change NPC_NAME / NPC_ID to match the actor you want to talk to.
- *  • Adjust width/height in defaultOptions.
- *  • Remove the “renderChatLog” hook if you don’t want the inline link.
+ *  Updated for Foundry Core 13+ using the V2 Application framework.
  ********************************************************************/
 
 /* ------------------------------------------------------------------
  *  CONFIGURATION – edit these constants to match your NPC
  * ------------------------------------------------------------------ */
-const NPC_NAME = "Mysterious Spren";   // Display name shown in the UI
-// If you prefer to reference the actor by ID (more reliable):
-// const NPC_ID = "Actor.6yLDcl5bqlLquO5R";
+const NPC_NAME = "Spren";                       // Display name shown in the UI
+const NPC_ID   = "Actor.UWdXecZvjKWQHLrh";      // Optional: reliable actor ID
 
 /* ------------------------------------------------------------------
- *  UI CLASS – the actual chat window
+ *  IMPORT V2 core classes / utilities
  * ------------------------------------------------------------------ */
-class NpcChatUI extends Application {
-  /** @override */
+import { ApplicationV2 } from "foundry/applications/api.js";
+import { mergeObject }   from "foundry/utils.js";
+
+/* ------------------------------------------------------------------
+ *  UI CLASS – the actual chat window (extends V2 Application)
+ * ------------------------------------------------------------------ */
+export default class NpcChatUI extends ApplicationV2 {
+
+  /** @override – define window options */
   static get defaultOptions() {
+    // V2 still uses the same option schema; we just import mergeObject
     return mergeObject(super.defaultOptions, {
       id: "npc-chat-ui",
       title: `Talk to ${NPC_NAME}`,
-      template: "modules/npc-chat-ui/templates/npc-chat.html",
+      template: "modules/soul-sanctum-logger/templates/npc-chat.html",
       width: 420,
       height: "auto",
       resizable: true,
       popOut: true,
-      classes: ["npc-chat"],
-      // Remember the last position the user gave the window
-      // (Foundry stores this automatically in localStorage)
+      classes: ["npc-chat"]
+      // Position persistence (via localStorage) is automatic because we set an id.
     });
   }
 
   /** @override – data passed to the Handlebars template */
   async getData(options) {
-    // Resolve the NPC actor (by name or ID)
+    // Resolve the NPC actor (by ID if defined, otherwise by name)
     let npc = null;
     if (typeof NPC_ID !== "undefined") {
       npc = game.actors.get(NPC_ID);
@@ -66,10 +51,15 @@ class NpcChatUI extends Application {
     const stored = game.settings.get("npc-chat-ui", "history") || {};
     const history = stored[npc?.id] || [];
 
+    // Store useful values on the instance for later use (no this.data in V2)
+    this.npcName = npc?.name ?? NPC_NAME;
+    this.npcId   = npc?.id ?? null;
+
+    // Return the context that the Handlebars template will receive
     return {
-      npcName: npc?.name ?? NPC_NAME,
-      npcId: npc?.id ?? null,
-      messages: history   // array of {speaker, content, timestamp}
+      npcName: this.npcName,
+      npcId:   this.npcId,
+      messages: history   // [{speaker, content, timestamp}, …]
     };
   }
 
@@ -90,7 +80,7 @@ class NpcChatUI extends Application {
     game.socket.on("module.npc-chat-ui", this._onSocketMessage.bind(this));
   }
 
-  /** ----------------------------------------------------------------
+  /* ----------------------------------------------------------------
    *  Private helper – send a new message
    * ---------------------------------------------------------------- */
   async _onSend(event) {
@@ -100,29 +90,33 @@ class NpcChatUI extends Application {
     const raw   = input.val().trim();
     if (!raw) return;
 
-    // Build the chat payload – we also push it to the global chat log
+    // Use the values saved in getData()
+    const speakerName = this.npcName;   // already cached on the instance
+    const npcId       = this.npcId;
+
+    // Build the chat payload – also push it to the global chat log
     const payload = {
-      speaker: { alias: this.data.npcName },
+      speaker: { alias: speakerName },
       content: `<p>${raw}</p>`,
-      flags:   { "npc-chat-ui": { npcId: this.data.npcId } }
+      flags:   { "npc-chat-ui": { npcId } }
     };
 
-    // Create a normal Foundry chat message (visible to everyone)
+    // 1️⃣ Normal Foundry chat message (visible to everyone)
     await ChatMessage.create(payload, { displaySheet: false });
 
-    // Store the message locally for this UI (so it persists across opens)
+    // 2️⃣ Store the message locally for this UI (so it persists across opens)
     this._storeLocalMessage({
-      speaker: payload.speaker.alias,
+      speaker: speakerName,
       content: raw,
       ts: Date.now()
     });
 
-    // Broadcast via socket so all open UI windows update instantly
+    // 3️⃣ Broadcast via socket so all open UI windows update instantly
     game.socket.emit("module.npc-chat-ui", {
       type: "newMessage",
-      speaker: payload.speaker.alias,
+      speaker: speakerName,
       content: raw,
-      npcId: this.data.npcId,
+      npcId,
       uiId: this.id
     });
 
@@ -130,7 +124,7 @@ class NpcChatUI extends Application {
     input.val("");
   }
 
-  /** ----------------------------------------------------------------
+  /* ----------------------------------------------------------------
    *  Private helper – append a message to the UI’s history view
    * ---------------------------------------------------------------- */
   _appendMessage({ speaker, content }) {
@@ -142,13 +136,13 @@ class NpcChatUI extends Application {
     chatBox.scrollTop(chatBox.prop("scrollHeight"));
   }
 
-  /** ----------------------------------------------------------------
+  /* ----------------------------------------------------------------
    *  Socket handler – receives broadcasts from other clients
    * ---------------------------------------------------------------- */
   _onSocketMessage(data) {
     if (data.type !== "newMessage") return;
     // Ignore messages that belong to a different NPC
-    if (data.npcId && data.npcId !== this.data.npcId) return;
+    if (data.npcId && data.npcId !== this.npcId) return;
 
     // Append to the UI
     this._appendMessage({ speaker: data.speaker, content: data.content });
@@ -161,14 +155,14 @@ class NpcChatUI extends Application {
     });
   }
 
-  /** ----------------------------------------------------------------
+  /* ----------------------------------------------------------------
    *  Local persistence – keep a short history in module settings
    * ---------------------------------------------------------------- */
   _storeLocalMessage(entry) {
     const settingsKey = "history";
     const allHistory = game.settings.get("npc-chat-ui", settingsKey) || {};
 
-    const npcKey = this.data.npcId ?? "unknown-npc";
+    const npcKey = this.npcId ?? "unknown-npc";
     const npcHist = allHistory[npcKey] ?? [];
 
     // Keep only the most recent 100 messages (adjust as desired)
@@ -203,28 +197,23 @@ Hooks.once("init", () => {
 });
 
 /**
- * After the core UI is ready, add a permanent button to the left sidebar.
+ * After the core UI is ready, add a permanent button to the right sidebar.
  */
 Hooks.once("ready", () => {
-  // -----------------------------------------------------------------
-  // Add the toolbar button (always visible)
-  // -----------------------------------------------------------------
+  // ----- Toolbar button (always visible) -----
   const btn = $("<button>")
     .addClass("control-tool")
     .attr("title", "Open NPC Chat")
     .html("<i class='fas fa-comments'></i>")
     .on("click", () => new NpcChatUI().render(true));
 
-  // Insert it at the top of the left UI column
-  $("#ui-left").prepend(btn);
+  // Insert it at the top of the right UI column
+  $("#ui-right").prepend(btn);
 
-  // -----------------------------------------------------------------
-  // OPTIONAL: inject a tiny “💬 Talk” link into the normal chat log
-  // -----------------------------------------------------------------
+  // ----- Optional “💬 Talk” link inside the normal chat log -----
   Hooks.on("renderChatLog", (app, html) => {
     html.find(".message").each((i, el) => {
       const msg = game.messages.contents[i];
-      // Only act on messages that were sent by the NPC we care about
       if (msg?.speaker?.alias === NPC_NAME) {
         const talkLink = $('<a class="npc-talk" style="margin-left:0.5em;">💬 Talk</a>');
         talkLink.click(() => new NpcChatUI().render(true));
@@ -233,12 +222,6 @@ Hooks.once("ready", () => {
     });
   });
 
-  // -----------------------------------------------------------------
-  // 3️⃣ Expose the UI class globally so macros can call it
-  // -----------------------------------------------------------------
+  // ----- Expose the UI class globally so macros can call it -----
   window.NpcChatUI = NpcChatUI;
 });
-
-/* ------------------------------------------------------------------
- *  END OF FILE
- * ------------------------------------------------------------------ */

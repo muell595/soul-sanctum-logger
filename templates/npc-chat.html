@@ -1,14 +1,17 @@
 <form>
   <header class="npc-header">
-    <h2>{{npcName}}</h2>
+    <h2>{{ npcName}}</h2>
   </header>
 
   <section id="npc-history" class="npc-history">
     {{!-- Existing messages will be appended here dynamically --}}
   </section>
 
-  <footer class="npc-footer">
+  <section id="npc-chat">
     <input type="text" id="npc-input" placeholder="Type your reply…" autocomplete="off"/>
+  </section>
+
+  <footer class="npc-footer">
     <button type="submit" id="npc-send"><i class="fas fa-paper-plane"></i></button>
   </footer>
 </form>
